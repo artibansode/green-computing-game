@@ -1,204 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Green IT Challenge</title>
+  <title>GreenByte Challenge</title>
   <style>
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
-      margin: 0;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #e8f5e9;
       text-align: center;
+      padding: 20px;
     }
-
-    h1 {
-      color: #2e7d32;
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 70%;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    .score-board {
-      font-size: 22px;
-      background: #ffffff;
-      display: inline-block;
+    button {
+      margin: 10px;
       padding: 10px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-bottom: 15px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-
-    .badge {
-      margin-top: 8px;
-      font-weight: bold;
-      color: #1565c0;
+    button:hover {
+      background-color: #388e3c;
     }
-
-    .section {
-      margin-top: 30px;
+    input {
+      padding: 8px;
+      margin: 10px;
     }
-
-    .game-area {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 15px;
+    table {
+      width: 80%;
+      margin: auto;
+      border-collapse: collapse;
     }
-
-    .draggable {
-      width: 110px;
-      height: 110px;
-      background: #ffffff;
-      border-radius: 15px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: grab;
-      font-size: 16px;
-      font-weight: 500;
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
     }
-
-    .target {
-      width: 130px;
-      height: 130px;
-      border: 3px dashed #555;
-      border-radius: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      background: #f9f9f9;
-    }
-
-    .tip-box {
-      margin-top: 20px;
-      background: #fffde7;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+    th {
+      background-color: #4caf50;
+      color: white;
     }
   </style>
 </head>
+
 <body>
 
-<h1>🌱 Green IT Challenge</h1>
+<h1>🌿 GreenByte Challenge</h1>
 
-<div class="score-board">
-  Eco Score: <span id="score">0</span>
-  <div id="badge" class="badge"></div>
+<!-- Profile Screen -->
+<div class="card" id="profileCard">
+  <h2>Create / Load Profile</h2>
+  <input type="text" id="username" placeholder="Enter your name">
+  <br>
+  <button onclick="loadProfile()">Start Game</button>
+  <button onclick="showLeaderboard()">View Leaderboard</button>
 </div>
 
-<div class="section">
-  <h2>♻️ Level 1: E‑Waste Sorting</h2>
-  <p>Drag the items into the correct bins</p>
+<!-- Game Screen -->
+<div class="card" id="gameCard" style="display:none;">
+  <h3>Player: <span id="playerName"></span></h3>
+  <h3>Score: <span id="score">0</span></h3>
+  <h3>Level: <span id="level">1</span></h3>
 
-  <div class="game-area">
-    <div class="draggable" draggable="true" id="oldPhone">📱 Old Phone</div>
-    <div class="draggable" draggable="true" id="banana">🍌 Banana</div>
-  </div>
+  <p id="question"></p>
+  <button onclick="choose(0)" id="btn0"></button>
+  <button onclick="choose(1)" id="btn1"></button>
 
-  <div class="game-area">
-    <div class="target" id="recycleBin">♻️ Recycle</div>
-    <div class="target" id="trashBin">🗑️ Trash</div>
-    <div class="target" id="donateBox">📦 Donate</div>
-  </div>
+  <p id="feedback"></p>
 </div>
 
-<div class="section">
-  <h2>⚡ Level 2: Choose Clean Energy</h2>
-  <p>Power devices using greener energy</p>
-
-  <div class="game-area">
-    <div class="draggable" draggable="true" id="solar">☀️ Solar</div>
-    <div class="draggable" draggable="true" id="grid">⚡ Grid</div>
-    <div class="draggable" draggable="true" id="coal">🔥 Coal</div>
-  </div>
-
-  <div class="game-area">
-    <div class="target" id="device1">💻 Device A</div>
-    <div class="target" id="device2">💻 Device B</div>
-  </div>
+<!-- Leaderboard Screen -->
+<div class="card" id="leaderboardCard" style="display:none;">
+  <h2>🏆 Leaderboard</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+  <br>
+  <button onclick="goHome()">Back</button>
 </div>
-
-<div class="tip-box" id="tipBox">
-  🌍 Tip: Recycling e‑waste prevents toxic metals from harming soil and water.
-</div>
-
-<audio id="correctSound" src="correct.mp3"></audio>
-<audio id="wrongSound" src="wrong.mp3"></audio>
-<audio id="levelSound" src="levelup.mp3"></audio>
 
 <script>
+let profiles = JSON.parse(localStorage.getItem("greenProfiles")) || {};
+let currentUser = "";
 let score = 0;
-const scoreEl = document.getElementById('score');
-const badgeEl = document.getElementById('badge');
-const tipBox = document.getElementById('tipBox');
+let current = 0;
+let level = 1;
 
-function updateScore(points, message) {
-  score += points;
-  scoreEl.textContent = score;
-  tipBox.textContent = '🌍 ' + message;
+const questions = [
+  { q: "What should you do with an old phone?", o: ["Recycle it", "Throw it away"], a: 0 },
+  { q: "Which energy source is greener?", o: ["Solar", "Coal"], a: 0 },
+  { q: "Best way to reduce e-waste?", o: ["Reuse devices", "Buy new often"], a: 0 },
+  { q: "Which saves energy?", o: ["Sleep mode", "Leaving PC on"], a: 0 },
+  { q: "Eco-friendly monitor choice?", o: ["LED", "CRT"], a: 0 },
+  { q: "What reduces carbon footprint?", o: ["Cloud optimization", "Unused servers"], a: 0 },
+  { q: "Proper disposal of batteries?", o: ["Special recycling", "Normal trash"], a: 0 },
+  { q: "Green data center uses?", o: ["Renewables", "Diesel only"], a: 0 },
+  { q: "Which is sustainable?", o: ["Energy-efficient CPUs", "Overclocked CPUs"], a: 0 },
+  { q: "Paper usage should be?", o: ["Minimized", "Maximized"], a: 0 },
+  { q: "Which helps sustainability?", o: ["Virtualization", "More hardware"], a: 0 },
+  { q: "What saves power?", o: ["Dark mode", "High brightness"], a: 0 },
+  { q: "Green networking involves?", o: ["Efficient routing", "Always-on devices"], a: 0 },
+  { q: "Best practice for laptops?", o: ["Charge responsibly", "Always plugged in"], a: 0 },
+  { q: "What promotes green IT?", o: ["Eco policies", "Ignoring impact"], a: 0 }
+];
 
-  if (points > 0) {
-    document.getElementById('correctSound').play();
+function loadProfile() {
+  const name = document.getElementById("username").value.trim();
+  if (!name) return alert("Please enter a name");
+
+  currentUser = name;
+  if (!profiles[name]) profiles[name] = { score: 0 };
+
+  score = profiles[name].score;
+  current = 0;
+  level = 1;
+
+  document.getElementById("playerName").innerText = name;
+  document.getElementById("score").innerText = score;
+
+  document.getElementById("profileCard").style.display = "none";
+  document.getElementById("leaderboardCard").style.display = "none";
+  document.getElementById("gameCard").style.display = "block";
+
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = questions[current];
+  document.getElementById("question").innerText = q.q;
+  document.getElementById("btn0").innerText = q.o[0];
+  document.getElementById("btn1").innerText = q.o[1];
+  document.getElementById("feedback").innerText = "";
+
+  if (current === 5) level = 2;
+  if (current === 10) level = 3;
+  document.getElementById("level").innerText = level;
+}
+
+function choose(choice) {
+  if (choice === questions[current].a) {
+    score += 10;
+    document.getElementById("feedback").innerText = "✅ Correct! Sustainable choice!";
   } else {
-    document.getElementById('wrongSound').play();
+    document.getElementById("feedback").innerText = "❌ Not the greenest option.";
   }
 
-  if (score >= 50 && badgeEl.textContent === '') {
-    badgeEl.textContent = '🏆 Badge Unlocked: Green Champion';
-    document.getElementById('levelSound').play();
-  }
-}
+  profiles[currentUser].score = Math.max(profiles[currentUser].score, score);
+  localStorage.setItem("greenProfiles", JSON.stringify(profiles));
 
-function allowDrop(e) {
-  e.preventDefault();
-}
+  document.getElementById("score").innerText = score;
+  current++;
 
-function drag(e) {
-  e.dataTransfer.setData('text', e.target.id);
-}
-
-function drop(e) {
-  e.preventDefault();
-  const item = e.dataTransfer.getData('text');
-  const target = e.target.id;
-
-  // E‑waste logic
-  if (target === 'recycleBin' && item === 'oldPhone') {
-    updateScore(10, 'Correct! Phones should be recycled as e‑waste.');
-  } else if (target === 'trashBin' && item === 'banana') {
-    updateScore(10, 'Correct! Organic waste belongs in trash/compost.');
-  } else if (target === 'donateBox' && item === 'oldPhone') {
-    updateScore(5, 'Good! Reusing devices reduces e‑waste.');
-  }
-
-  // Energy logic
-  else if ((target === 'device1' || target === 'device2') && item === 'solar') {
-    updateScore(15, 'Excellent! Solar energy is clean and renewable.');
-  } else if ((target === 'device1' || target === 'device2') && item === 'grid') {
-    updateScore(5, 'Grid power is better when combined with renewables.');
-  } else if ((target === 'device1' || target === 'device2') && item === 'coal') {
-    updateScore(-10, 'Coal increases carbon footprint. Avoid it!');
+  if (current < questions.length) {
+    setTimeout(loadQuestion, 1000);
   } else {
-    updateScore(-5, 'Wrong choice. Think green 🌱');
+    setTimeout(() => {
+      alert("Game Over! Final Score: " + score);
+      showLeaderboard();
+    }, 1000);
   }
 }
 
-// Event bindings
-document.querySelectorAll('.draggable').forEach(el => {
-  el.addEventListener('dragstart', drag);
-});
+function showLeaderboard() {
+  document.getElementById("profileCard").style.display = "none";
+  document.getElementById("gameCard").style.display = "none";
+  document.getElementById("leaderboardCard").style.display = "block";
 
-['recycleBin','trashBin','donateBox','device1','device2'].forEach(id => {
-  const target = document.getElementById(id);
-  target.addEventListener('dragover', allowDrop);
-  target.addEventListener('drop', drop);
-});
+  const body = document.getElementById("leaderboardBody");
+  body.innerHTML = "";
+
+  const sorted = Object.entries(profiles)
+    .sort((a, b) => b[1].score - a[1].score);
+
+  sorted.forEach((entry, index) => {
+    const row = `<tr>
+      <td>${index + 1}</td>
+      <td>${entry[0]}</td>
+      <td>${entry[1].score}</td>
+    </tr>`;
+    body.innerHTML += row;
+  });
+}
+
+function goHome() {
+  document.getElementById("leaderboardCard").style.display = "none";
+  document.getElementById("profileCard").style.display = "block";
+}
 </script>
 
 </body>
