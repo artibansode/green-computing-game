@@ -26,26 +26,10 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #388e3c;
-    }
-    input {
-      padding: 8px;
-      margin: 10px;
-    }
-    table {
-      width: 80%;
-      margin: auto;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background-color: #4caf50;
-      color: white;
-    }
+    button:hover { background-color: #388e3c; }
+    input { padding: 8px; margin: 10px; }
+    .stat { font-weight: bold; }
+    #timer { color: red; font-weight: bold; }
   </style>
 </head>
 
@@ -53,20 +37,22 @@
 
 <h1>🌿 GreenByte Challenge</h1>
 
-<!-- Profile Screen -->
+<!-- PROFILE SCREEN -->
 <div class="card" id="profileCard">
   <h2>Create / Load Profile</h2>
   <input type="text" id="username" placeholder="Enter your name">
   <br>
   <button onclick="loadProfile()">Start Game</button>
-  <button onclick="showLeaderboard()">View Leaderboard</button>
+  <button onclick="showStats()">View Profile Stats</button>
 </div>
 
-<!-- Game Screen -->
+<!-- GAME SCREEN -->
 <div class="card" id="gameCard" style="display:none;">
   <h3>Player: <span id="playerName"></span></h3>
   <h3>Score: <span id="score">0</span></h3>
   <h3>Level: <span id="level">1</span></h3>
+  <h3>⏱️ Time Left: <span id="timer">15</span>s</h3>
+  <h3>🔥 Streak: <span id="streak">0</span></h3>
 
   <p id="question"></p>
   <button onclick="choose(0)" id="btn0"></button>
@@ -75,19 +61,13 @@
   <p id="feedback"></p>
 </div>
 
-<!-- Leaderboard Screen -->
-<div class="card" id="leaderboardCard" style="display:none;">
-  <h2>🏆 Leaderboard</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Player</th>
-        <th>Score</th>
-      </tr>
-    </thead>
-    <tbody id="leaderboardBody"></tbody>
-  </table>
+<!-- STATS SCREEN -->
+<div class="card" id="statsCard" style="display:none;">
+  <h2>📊 Profile Statistics</h2>
+  <p class="stat">Player: <span id="statName"></span></p>
+  <p class="stat">Games Played: <span id="gamesPlayed"></span></p>
+  <p class="stat">Highest Score: <span id="highScore"></span></p>
+  <p class="stat">Accuracy: <span id="accuracy"></span>%</p>
   <br>
   <button onclick="goHome()">Back</button>
 </div>
@@ -98,6 +78,9 @@ let currentUser = "";
 let score = 0;
 let current = 0;
 let level = 1;
+let streak = 0;
+let timer = 15;
+let timerInterval;
 
 const questions = [
   { q: "What should you do with an old phone?", o: ["Recycle it", "Throw it away"], a: 0 },
@@ -105,98 +88,129 @@ const questions = [
   { q: "Best way to reduce e-waste?", o: ["Reuse devices", "Buy new often"], a: 0 },
   { q: "Which saves energy?", o: ["Sleep mode", "Leaving PC on"], a: 0 },
   { q: "Eco-friendly monitor choice?", o: ["LED", "CRT"], a: 0 },
-  { q: "What reduces carbon footprint?", o: ["Cloud optimization", "Unused servers"], a: 0 },
   { q: "Proper disposal of batteries?", o: ["Special recycling", "Normal trash"], a: 0 },
-  { q: "Green data center uses?", o: ["Renewables", "Diesel only"], a: 0 },
-  { q: "Which is sustainable?", o: ["Energy-efficient CPUs", "Overclocked CPUs"], a: 0 },
-  { q: "Paper usage should be?", o: ["Minimized", "Maximized"], a: 0 },
+  { q: "Green data center uses?", o: ["Renewables", "Diesel"], a: 0 },
   { q: "Which helps sustainability?", o: ["Virtualization", "More hardware"], a: 0 },
   { q: "What saves power?", o: ["Dark mode", "High brightness"], a: 0 },
-  { q: "Green networking involves?", o: ["Efficient routing", "Always-on devices"], a: 0 },
-  { q: "Best practice for laptops?", o: ["Charge responsibly", "Always plugged in"], a: 0 },
   { q: "What promotes green IT?", o: ["Eco policies", "Ignoring impact"], a: 0 }
 ];
 
 function loadProfile() {
   const name = document.getElementById("username").value.trim();
-  if (!name) return alert("Please enter a name");
+  if (!name) return alert("Enter a name");
 
   currentUser = name;
-  if (!profiles[name]) profiles[name] = { score: 0 };
 
-  score = profiles[name].score;
+  if (!profiles[name]) {
+    profiles[name] = {
+      highScore: 0,
+      games: 0,
+      correct: 0,
+      total: 0
+    };
+  }
+
+  score = 0;
+  streak = 0;
   current = 0;
   level = 1;
 
   document.getElementById("playerName").innerText = name;
   document.getElementById("score").innerText = score;
+  document.getElementById("streak").innerText = streak;
 
   document.getElementById("profileCard").style.display = "none";
-  document.getElementById("leaderboardCard").style.display = "none";
   document.getElementById("gameCard").style.display = "block";
 
   loadQuestion();
 }
 
 function loadQuestion() {
+  clearInterval(timerInterval);
+  timer = 15;
+  document.getElementById("timer").innerText = timer;
+
+  timerInterval = setInterval(() => {
+    timer--;
+    document.getElementById("timer").innerText = timer;
+    if (timer === 0) {
+      clearInterval(timerInterval);
+      streak = 0;
+      document.getElementById("streak").innerText = streak;
+      nextQuestion(false);
+    }
+  }, 1000);
+
   const q = questions[current];
   document.getElementById("question").innerText = q.q;
   document.getElementById("btn0").innerText = q.o[0];
   document.getElementById("btn1").innerText = q.o[1];
-  document.getElementById("feedback").innerText = "";
 
-  if (current === 5) level = 2;
-  if (current === 10) level = 3;
+  if (current === 4) level = 2;
+  if (current === 7) level = 3;
   document.getElementById("level").innerText = level;
 }
 
 function choose(choice) {
-  if (choice === questions[current].a) {
+  clearInterval(timerInterval);
+  const correct = choice === questions[current].a;
+  nextQuestion(correct);
+}
+
+function nextQuestion(correct) {
+  profiles[currentUser].total++;
+
+  if (correct) {
     score += 10;
-    document.getElementById("feedback").innerText = "✅ Correct! Sustainable choice!";
+    streak++;
+    profiles[currentUser].correct++;
+
+    if (streak % 3 === 0) score += 5; // bonus
   } else {
-    document.getElementById("feedback").innerText = "❌ Not the greenest option.";
+    streak = 0;
   }
 
-  profiles[currentUser].score = Math.max(profiles[currentUser].score, score);
-  localStorage.setItem("greenProfiles", JSON.stringify(profiles));
-
   document.getElementById("score").innerText = score;
+  document.getElementById("streak").innerText = streak;
+
   current++;
 
   if (current < questions.length) {
-    setTimeout(loadQuestion, 1000);
+    loadQuestion();
   } else {
-    setTimeout(() => {
-      alert("Game Over! Final Score: " + score);
-      showLeaderboard();
-    }, 1000);
+    endGame();
   }
 }
 
-function showLeaderboard() {
+function endGame() {
+  profiles[currentUser].games++;
+  profiles[currentUser].highScore =
+    Math.max(profiles[currentUser].highScore, score);
+
+  localStorage.setItem("greenProfiles", JSON.stringify(profiles));
+
+  alert("Game Over!\nFinal Score: " + score);
+  goHome();
+}
+
+function showStats() {
+  const name = document.getElementById("username").value.trim();
+  if (!profiles[name]) return alert("Profile not found");
+
+  const p = profiles[name];
+  document.getElementById("statName").innerText = name;
+  document.getElementById("gamesPlayed").innerText = p.games;
+  document.getElementById("highScore").innerText = p.highScore;
+  document.getElementById("accuracy").innerText =
+    p.total ? Math.round((p.correct / p.total) * 100) : 0;
+
   document.getElementById("profileCard").style.display = "none";
-  document.getElementById("gameCard").style.display = "none";
-  document.getElementById("leaderboardCard").style.display = "block";
-
-  const body = document.getElementById("leaderboardBody");
-  body.innerHTML = "";
-
-  const sorted = Object.entries(profiles)
-    .sort((a, b) => b[1].score - a[1].score);
-
-  sorted.forEach((entry, index) => {
-    const row = `<tr>
-      <td>${index + 1}</td>
-      <td>${entry[0]}</td>
-      <td>${entry[1].score}</td>
-    </tr>`;
-    body.innerHTML += row;
-  });
+  document.getElementById("statsCard").style.display = "block";
 }
 
 function goHome() {
-  document.getElementById("leaderboardCard").style.display = "none";
+  document.getElementById("gameCard").style.display = "none";
+  document.getElementById("statsCard").style.display = "none";
   document.getElementById("profileCard").style.display = "block";
 }
 </script>
